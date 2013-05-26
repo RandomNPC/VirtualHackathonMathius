@@ -7,12 +7,12 @@ public class instantiation : MonoBehaviour {
 	
 void Start ()
 {
-Instantiate(Resources.Load("prefab/--"),new Vector3(0,0,0), Quaternion.identity);
+earth = Instantiate(Resources.Load("prefab/--"),new Vector3(0,0,0), Quaternion.identity)as GameObject;
 		
 }
 	void Update() 
 	{
-		Instantiate(Resources.Load("prefab/--"),new Vector3(1,1,1), Quaternion.identity);
+		earth = Instantiate(Resources.Load("prefab/--"),new Vector3(1,1,1), Quaternion.identity)as GameObject;
 		
     }
 }
