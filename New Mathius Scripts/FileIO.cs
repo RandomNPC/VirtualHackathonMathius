@@ -4,63 +4,71 @@ using System.IO;
 
 public class FileIO : MonoBehaviour {
 	
-	private StreamWriter filewriter;
-	private StreamReader filereader;
 	private ArrayList content;
 	private static string FILENAME;
+	private Mathius_UI ourScore;
 	
 	void Start(){
 		FILENAME = Application.persistentDataPath + "/highscores.txt";
-		filewriter = null;
-		filereader = null;
 		content = new ArrayList();
 		load ();
+		ourScore = GameObject.Find("G1").GetComponent("Mathius_UI") as Mathius_UI;
 	}
 	
 	void load(){
 		content.Clear();
-		filereader = new StreamReader(FILENAME);
-	    string line;
-       
-        while ((line = filereader.ReadLine()) != null)
-        {
-            content.Add(line);
-        }
 		
-		filereader.Close();
-		filereader = null;
-	}
-	
-	public void add(int score, string name){
-		content.Add(score+" "+name);
-	}
-	
-	public string[] highscores(){
-		return (string[]) content.ToArray(typeof(string));
+		if(!File.Exists(FILENAME)){
+			using (StreamWriter sw = File.CreateText(FILENAME)){}
+		}
+		
+		using(StreamReader sr = File.OpenText(FILENAME)){
+			string text = "";
+			while((text = sr.ReadLine())!=null){
+				PlayerScore ps = new PlayerScore(int.Parse(text.Substring(0,text.IndexOf(' '))),text.Substring(text.IndexOf(' ')+1));
+				content.Add(ps);
+			}
+		}
+		
 	}
 	
 	public void save(){
-		filewriter = new StreamWriter(FILENAME);
-		content.Sort();
-		content.Reverse();
-		foreach(string item in content) filewriter.WriteLine(item);
-		filewriter.Close();
-		filewriter = null;
-	}
-/*	
-	public class hsTable{
-		private int _score;
-		private string _name;
+		PlayerScore p = new PlayerScore(ourScore.totalScore,"NPC");		
+		content.Add (p);
 		
-		public hsTable(int s, string n){
+		ArrayList temp = new ArrayList(content.Count);
+		while(content.Count>0){
+			PlayerScore highest = null;
+			
+			foreach(PlayerScore ps in content){
+				if(highest==null) highest = ps;
+				else{
+					if(highest.score()<ps.score()) highest = ps;	
+				}
+			}
+			content.Remove(highest);
+			temp.Add(highest);
+		}
+		content = temp;
+		
+		using(StreamWriter sw = File.CreateText(FILENAME)){
+			foreach(PlayerScore c in content){
+				sw.WriteLine(c.score() + " " + c.player());
+			}
+		}
+	}
+	
+	private class PlayerScore{
+		private int _score;
+		private string _player;
+		
+		public PlayerScore(int s, string p){
 			_score = s;
-			_name = n;
+			_player = p;
 		}
 		
-		public int score(){return score;}
-		public string name(){return name;}
-		
-		
+		public int score(){return _score;}
+		public string player(){return _player;}
 	};
-*/
+
 }
