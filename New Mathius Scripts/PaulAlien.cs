@@ -3,22 +3,24 @@ using System.Collections;
 
 public class PaulAlien : MonoBehaviour {
 	
-	public TextMesh equation;//global varriable
+	public TextMesh equation;
 	public int answer;
-	public AudioClip alianExplosion;
 	
-	private PaulScore ps;//script reference
+	private PaulScore ps;
 	
 	// Use this for initialization
 	void Start () {
 		equation = gameObject.GetComponentInChildren(typeof(TextMesh)) as TextMesh;
 		equation.renderer.material.color = Color.magenta;
 		answer = 0;
-		generateEquation();
+		//generateEquation();
+		createEquation();
 		ps = GameObject.Find ("MathiusEarthCam").GetComponent("PaulScore") as PaulScore;
 	}
 	
 	void generateEquation(){
+		
+		//EquationGenerator eq = new EquationGenerator(EquationGenerator.ADDITION | EquationGenerator.SUBTRACTION | EquationGenerator.DIVISION);
 		
 		answer = (int)Random.Range(0,9);
 		int temp = (int)Random.Range(0,10);
@@ -37,7 +39,7 @@ public class PaulAlien : MonoBehaviour {
 				}
 				break;
 			case 2: //multiplication
-				if(temp<1) temp = (int)Random.Range(1,10);
+				if(temp<1) temp = (int)Random.Range(1,9);
 				switch((int)Random.Range(0,2)){
 					case 0:
 						equation.text = temp + " * x = " + (temp*answer);		
@@ -52,22 +54,34 @@ public class PaulAlien : MonoBehaviour {
 				break;
 			case 3: // division
 			case 4:
-				if(temp==0){
-					if(answer==0){//not okay
-							answer = (int)Random.Range(1,9);
-							temp = (int)Random.Range(1,10);
+					while(true){
+						if(!answer.Equals(0) && !temp.Equals(0)) break;
+						answer = (int)Random.Range(0,9);
+						temp = (int)Random.Range(0,9);
 					}
-				}else{
-					if(answer==0){ //not okay
-							answer = (int)Random.Range(1,9);
-							temp = (int)Random.Range(1,10);
-					}
-				}
-				equation.text = (temp*answer) + " / x = " + temp;
+					equation.text = (temp*answer) + " / x = " + temp;
+				
 				break;
-			default:		
+			default:
+				print ("CANT MAKE UP MY MIND");
 				break;
 		}
+	}
+	
+	void createEquation(){
+		EquationGenerator eg = new EquationGenerator(EquationGenerator.ADDITION | 
+													 EquationGenerator.SUBTRACTION |
+													 EquationGenerator.MULTIPLICATION |
+													 EquationGenerator.DIVISION,
+													 EquationGenerator.MIXED
+													);
+		equation.text = eg.Equation();
+		answer = eg.answer();
+	}
+	
+	
+	void OnCollisionTrigger(Collider obj){
+		print ("DING");
 	}
 	
 	public void alien_shot(char num){
@@ -75,7 +89,6 @@ public class PaulAlien : MonoBehaviour {
 		string number = answer.ToString();
 		if(number.Equals(num_shot)){
 			ps.correct_answer();
-			audio.PlayOneShot(alianExplosion,100.0f);
 			Destroy(gameObject);
 		}else{
 			ps.wrong_answer();
